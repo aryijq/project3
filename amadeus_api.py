@@ -13,12 +13,13 @@ def cheapest_destination(name):
     dest_data = dest.data
     return dest_data
 
-city_list = ["PAR", "MAD", "FRA", "ROM", "ICN"]
+# 도시 리스트 : 런던, 파리, 마드리드, 프랑크푸르트, 로마
+city_list = ["LON", "PAR", "MAD", "FRA", "ROM"]
 
-# 날짜별로 런던 출발, 목적지에 도착하는 가장 싼 티켓
-def cheapest_flight(destination, adults, origin="LON"):
-    start_date = pd.to_datetime("2022-03-01")
-    end_date = pd.to_datetime("2022-03-31")
+# 날짜별로 인천 출발, 목적지에 도착하는 가장 싼 티켓
+def cheapest_flight(destination, adults, origin="ICN"):
+    start_date = pd.to_datetime("2022-07-01")
+    end_date = pd.to_datetime("2022-07-31")
     date_range = pd.date_range(start_date, end_date, freq="D")
 
     march=[]
@@ -38,10 +39,10 @@ def cheapest_flight(destination, adults, origin="LON"):
         offer_data = offer.data
         offers.extend(offer_data)
     return offers
-
+    
 
 # 목적지, 출발, 귀환, 검색 나라에 따른 여행 목적
-def travel_prediction(destination, dep_date, return_date, origin="LON"):
+def travel_prediction(destination, dep_date, return_date, origin="ICN"):
     today = str(pd.Timestamp.now())[:10]
     pred = amadeus.travel.predictions.trip_purpose.get(
                     originLocationCode=origin,
@@ -57,7 +58,7 @@ def travel_prediction(destination, dep_date, return_date, origin="LON"):
 
 # 해당 도시에 방문해서 할 수 있는 액티비티 TOP 10
 def activity_prediction(city):
-    loc = amadeus.reference_data.locations.get(keyword=city, subType=Location.ANY)
+    loc = amadeus.reference_data.locations.get(keyword=city, subType=Location.CITY)
     geocode = loc.data[0]["geoCode"]
 
     shop_act = amadeus.shopping.activities.get(
@@ -73,11 +74,10 @@ def activity_prediction(city):
     return act_lst
 
 
-
 # 해당 공항에 제때 도착할 확률
 def on_time_prediction(city):
-    start_date = pd.to_datetime("2022-03-01")
-    end_date = pd.to_datetime("2022-03-31")
+    start_date = pd.to_datetime("2022-07-01")
+    end_date = pd.to_datetime("2022-07-31")
     date_range = pd.date_range(start_date, end_date, freq="D")
 
     march=[]
@@ -94,7 +94,6 @@ def on_time_prediction(city):
         on_time.append(pred_data)
     return on_time
 
-# on_time_prediction("ICN")
 
 
 

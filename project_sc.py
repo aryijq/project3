@@ -3,8 +3,8 @@ import pandas as pd
 import datetime
 from datetime import timedelta
 
-offer = pd.read_csv("C:/Users/aryij/Documents/AI Bootcamp/Section 3/project3/db/departure_mod.csv")
-prediction = pd.read_csv("C:/Users/aryij/Documents/AI Bootcamp/Section 3/project3/db/prediction.csv")
+offer = pd.read_csv("C:/Users/aryij/Documents/AI Bootcamp/Section 3/project3/db_csv/departure_mod_2.csv")
+prediction = pd.read_csv("C:/Users/aryij/Documents/AI Bootcamp/Section 3/project3/db_csv/prediction_mod.csv")
 
 
 def country(x):
@@ -16,8 +16,8 @@ def country(x):
         return "MAD"
     elif x == "CDG" or x == "ORY":
         return "PAR"
-    elif x == "ICN":
-        return "ICN"
+    elif x == "STN" or x == "LGW" or x == "LCY" or x == "LHR":
+        return "LON"
 
 offer["dest"] = offer["iatacode_2.1"].apply(lambda x : country(x))
 
@@ -36,21 +36,13 @@ offer["arr_date"] = offer["arr_date"].fillna(offer["arr_date_2"])
 
 offer = offer.drop(columns=["arr_date_2"], axis=1)
 
-
-
 prediction = prediction.drop(columns=["id", "number"], axis=1)
 
 prediction.rename(columns={"date" : "arr_date"}, inplace=True)
 
-
-
-offer = pd.merge(left=offer, right=prediction, how="left", on=["dest", "arr_date"])
-
-
+offer = pd.merge(left=offer, right=prediction)
 
 offer = offer.drop(columns=["number", "seg_id_1", "seg_id_1.1", "air_number_1", 'air_number_2', 'at_2'])
-
-offer.columns
 
 offer.columns = ['code', 'total_dur', 'dur_1', "departure_1", "arrival_1", 'carriercode_1', "dep_date", 'transfer', 'dur_2',
                  "departure_2", "arrival_2", 'carriercode_2', 'bookable_seats', 'currency', 'total', 'dest', 'arr_date', 'ontime_proba']
@@ -81,7 +73,7 @@ train, val = train_test_split(train, train_size=0.8, random_state=42)
 # train.shape, val.shape, test.shape
 
 target = "total"
-features = "dep_date"
+features = ["departure_1", "dep_date", "transfer"]
 # features = offer.drop(columns=[target]).columns
 
 X_train = train[features]
@@ -93,23 +85,24 @@ y_val = val[target]
 X_test = test[features]
 y_test = test[target]
 
-X_train.shape, y_train.shape, X_val.shape, y_val.shape, X_test.shape, y_test.shape
-
 # 회귀 기준모델 생성
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from math import sqrt
 
 # 기준 예측값
 predicted = y_train.mean()
 y_pred_base = [predicted] * len(y_val)
 
-mae = mean_absolute_error(y_val, y_pred_base)
-mse = mean_squared_error(y_val, y_pred_base)
-r2 = r2_score(y_val, y_pred_base)
+mae_base = mean_absolute_error(y_val, y_pred_base)
+mse_base = mean_squared_error(y_val, y_pred_base)
+rmse_base = sqrt(mse_base)
+r2_base = r2_score(y_val, y_pred_base)
 
 # print("기준 모델 (평균) :", predicted)
-# print("기준 모델 MAE :", mae)
-# print("기준 모델 MSE :", mse)
-# print("기준 모델 R2 score :", r2)
+# print("기준 모델 MAE :", mae_base)
+# print("기준 모델 MSE :", mse_base)
+# print("기준 모델 RMSE :", rmse_base)
+# print("기준 모델 R2 score :", r2_base)
 
 # pip install category-encoders
 
@@ -141,13 +134,15 @@ boosting.fit(X_train_encoded, y_train,
 y_pred_val_xgb = boosting.predict(X_val_encoded)
 y_pred_test_xgb = boosting.predict(X_test_encoded)
 
-# print("XGB val mae :", mean_absolute_error(y_val, y_pred_val_xgb))
-# print("XGB val mse :", mean_squared_error(y_val, y_pred_val_xgb))
+# print("XGB val MAE :", mean_absolute_error(y_val, y_pred_val_xgb))
+# print("XGB val MSE :", mean_squared_error(y_val, y_pred_val_xgb))
+# print("XGB val RMSE :", sqrt(mean_squared_error(y_val, y_pred_val_xgb)))
 # print("XGB val R2 score :", r2_score(y_val, y_pred_val_xgb))
 
 
 # print("XGB MAE_test :", mean_absolute_error(y_test, y_pred_test_xgb))
 # print("XGB MSE_test :", mean_squared_error(y_test, y_pred_test_xgb))
+# print("XGB RMSE_test :", sqrt(mean_squared_error(y_test, y_pred_test_xgb)))
 # print("XGB R2 score_test :", r2_score(y_test, y_pred_test_xgb))
 
 # boosting.save_model("xgb_model.model")

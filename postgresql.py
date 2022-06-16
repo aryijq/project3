@@ -272,14 +272,14 @@ def get_ontime():
 
     for data in collection_ontime.find():
 
-        start_date = pd.to_datetime("2022-03-01")
-        end_date = pd.to_datetime("2022-03-31")
+        start_date = pd.to_datetime("2022-07-01")
+        end_date = pd.to_datetime("2022-07-31")
         date_range = pd.date_range(start_date, end_date, freq="D")
 
-        march=[]
+        july=[]
         for day in date_range:
             days = str(day)[:10]
-            march.append(days)
+            july.append(days)
 
 
         dest = data["Destination"]
@@ -287,7 +287,7 @@ def get_ontime():
         len_proba = len(probas)
 
         for i in list(range(len_proba)):
-            date = march[i]
+            date = july[i]
             ontime_proba = probas[i]
 
             query_ontime = "INSERT INTO prediction (dest, date, ontime_proba) VALUES (%s, %s, %s)"

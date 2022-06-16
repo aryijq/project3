@@ -84,7 +84,7 @@ def on_time_prediction(city):
     for day in date_range:
         days = str(day)[:10]
         march.append(days)
-    
+
     on_time=[]
     for date in march:
         pred = amadeus.airport.predictions.on_time.get(
@@ -94,8 +94,8 @@ def on_time_prediction(city):
         on_time.append(pred_data)
     return on_time
 
-
-
+# breakpoint()
+# on_time_prediction("ROM")
 
 
 

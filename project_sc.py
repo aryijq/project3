@@ -63,6 +63,10 @@ offer = offer[['code', 'total_dur', 'dur_1', "departure_1", "arrival_1", 'carrie
 
 # offer["dep_date"] = offer["dep_date"].apply(pd.to_datetime)
 
+# "departure_1", "dep_date", "transfer" category로 형변환
+offer["departure_1"] = offer["departure_1"].astype("category")
+offer["dep_date"] = offer["dep_date"].astype("category")
+offer["transfer"] = offer["transfer"].astype("category")
 
 from sklearn.model_selection import train_test_split
 
@@ -116,23 +120,23 @@ X_train_encoded = encoder.fit_transform(X_train)
 X_val_encoded = encoder.transform(X_val)
 X_test_encoded = encoder.transform(X_test)
 
-boosting = XGBRegressor(
-    n_estimators=1000,
-    objective="reg:squarederror",
-    learning_rate=0.2,
-    n_jobs=-1,
-    enable_categorical=True
-)
+# boosting = XGBRegressor(
+#     n_estimators=1000,
+#     objective="reg:squarederror",
+#     learning_rate=0.2,
+#     n_jobs=-1,
+#     enable_categorical=True
+# )
 
-eval_set = [(X_train_encoded, y_train),
-            (X_val_encoded, y_val)]
+# eval_set = [(X_train_encoded, y_train),
+#             (X_val_encoded, y_val)]
 
-boosting.fit(X_train_encoded, y_train,
-             eval_set=eval_set,
-             early_stopping_rounds=100)
+# boosting.fit(X_train_encoded, y_train,
+#              eval_set=eval_set,
+#              early_stopping_rounds=100)
 
-y_pred_val_xgb = boosting.predict(X_val_encoded)
-y_pred_test_xgb = boosting.predict(X_test_encoded)
+# y_pred_val_xgb = boosting.predict(X_val_encoded)
+# y_pred_test_xgb = boosting.predict(X_test_encoded)
 
 # print("XGB val MAE :", mean_absolute_error(y_val, y_pred_val_xgb))
 # print("XGB val MSE :", mean_squared_error(y_val, y_pred_val_xgb))
@@ -146,3 +150,31 @@ y_pred_test_xgb = boosting.predict(X_test_encoded)
 # print("XGB R2 score_test :", r2_score(y_test, y_pred_test_xgb))
 
 # boosting.save_model("xgb_model.model")
+
+# LightGBM 모델도 사용
+from lightgbm import LGBMRegressor
+
+lgbm = LGBMRegressor(n_estimators=100, learning_rate=0.2)
+
+evals = [(X_train_encoded, y_train),
+         (X_val_encoded, y_val)]
+
+lgbm.fit(X_train_encoded, y_train, 
+         eval_set=evals, 
+         early_stopping_rounds=100)
+
+y_pred_val_xgb = lgbm.predict(X_val_encoded)
+y_pred_test_xgb = lgbm.predict(X_test_encoded)
+
+# print("XGB val MAE :", mean_absolute_error(y_val, y_pred_val_xgb))
+# print("XGB val MSE :", mean_squared_error(y_val, y_pred_val_xgb))
+# print("XGB val RMSE :", sqrt(mean_squared_error(y_val, y_pred_val_xgb)))
+# print("XGB val R2 score :", r2_score(y_val, y_pred_val_xgb))
+
+# lgbm.booster_.save_model("lgbm_model.model")
+
+import joblib
+import pickle
+
+filename = "lgbm_model.pkl"
+joblib.dump(lgbm, filename)

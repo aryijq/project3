@@ -1,12 +1,9 @@
 import joblib
 import numpy as np
 import pandas as pd
-from xgboost import XGBRegressor
-import xgboost
 import matplotlib.pyplot as plt
 from category_encoders import OrdinalEncoder
 from lightgbm import LGBMRegressor
-import joblib
 from project_sc import X_test, X_test_encoded, encoder
 
 
@@ -23,6 +20,4 @@ def july_pred(city, date, transfer="Y"):
     df_enc = encoder.transform(df)
     pred = lgbm_from_pickle.predict(df_enc)
     return pred
-
-print(july_pred("PAR", "2022-07-21"))
 
